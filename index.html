@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎲 아이스브레이킹 보드게임</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Jua&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:  #060912;
+  --s1:  #0c1424;
+  --s2:  #111e32;
+  --s3:  #172540;
+  --bd:  #1d2e48;
+  --t1:  #e4edf8;
+  --t2:  #4e6888;
+  --t3:  #283a52;
+  --acc: #6b9eff;
+  --gold:#fbbf24;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'Noto Sans KR', -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+}
+
+/* ═══════════ SETUP ═══════════ */
+.setup-page { min-height: 100vh; padding: 48px 20px 80px; display: flex; justify-content: center; }
+.setup-inner { width: 100%; max-width: 680px; }
+.logo { text-align: center; margin-bottom: 44px; }
+.logo-dice { display: inline-block; font-size: 4rem; filter: drop-shadow(0 6px 28px rgba(107,158,255,.55)); animation: float 3s ease-in-out infinite; margin-bottom: 14px; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.logo-title {
+  font-size: 2.1rem; font-weight: 900; letter-spacing: -.02em;
+  background: linear-gradient(125deg, #b4d0ff 0%, #6b9eff 45%, #c4b5fd 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 6px;
+}
+.logo-sub { font-size: 0.86rem; color: var(--t2); }
+
+.scard { background: var(--s1); border: 1px solid var(--bd); border-radius: 18px; padding: 24px; margin-bottom: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.35); }
+.scard-title { font-size: 0.72rem; font-weight: 900; color: var(--acc); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 18px; }
+
+.num-row { display: flex; gap: 8px; }
+.nb { flex: 1; height: 52px; border-radius: 12px; border: 1.5px solid var(--bd); background: var(--bg); color: var(--t2); font-size: 0.95rem; font-weight: 900; cursor: pointer; transition: all .15s; font-family: inherit; }
+.nb.on { border-color: var(--acc); background: rgba(107,158,255,.1); color: var(--acc); }
+.nb:hover:not(.on) { color: var(--t1); background: var(--s2); }
+
+.names-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 14px; }
+.name-row { display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1.5px solid var(--bd); border-radius: 11px; padding: 10px 14px; transition: border-color .15s; }
+.name-row:focus-within { border-color: var(--acc); }
+.cdot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.name-row input { background: none; border: none; color: var(--t1); font-size: 0.9rem; width: 100%; outline: none; font-family: inherit; }
+
+.btabs { display: flex; background: var(--bg); border: 1.5px solid var(--bd); border-radius: 11px; padding: 3px; gap: 3px; margin-bottom: 14px; }
+.btab { flex: 1; padding: 9px; border: none; border-radius: 9px; background: transparent; color: var(--t2); font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; }
+.btab.on { background: var(--s2); color: var(--t1); }
+
+.flex-row { display: flex; gap: 8px; }
+.topic-in { flex: 1; padding: 11px 16px; background: var(--bg); border: 1.5px solid var(--bd); border-radius: 11px; color: var(--t1); font-size: 0.9rem; outline: none; font-family: inherit; transition: border-color .15s; }
+.topic-in:focus { border-color: var(--acc); }
+.genbtn { padding: 11px 20px; background: linear-gradient(135deg, #6b9eff, #a78bfa); color: #fff; border: none; border-radius: 11px; font-weight: 900; font-size: 0.88rem; cursor: pointer; white-space: nowrap; font-family: inherit; transition: opacity .2s; box-shadow: 0 4px 16px rgba(107,158,255,.3); }
+.genbtn:hover:not(:disabled) { opacity: .85; }
+.genbtn:disabled { opacity: .35; cursor: wait; }
+.gennote { font-size: 0.8rem; color: #4ade80; margin-top: 9px; }
+
+.mangrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; max-height: 340px; overflow-y: auto; padding-right: 3px; }
+.mangrid::-webkit-scrollbar { width: 3px; }
+.mangrid::-webkit-scrollbar-thumb { background: var(--bd); border-radius: 2px; }
+.man-item label { font-size: 0.7rem; color: var(--t2); display: block; margin-bottom: 3px; }
+.man-item textarea { width: 100%; background: var(--bg); border: 1.5px solid var(--bd); border-radius: 8px; color: var(--t1); font-size: 0.78rem; padding: 8px; resize: vertical; min-height: 58px; outline: none; font-family: inherit; transition: border-color .15s; }
+.man-item textarea:focus { border-color: var(--acc); }
+.man-count { font-size: 0.76rem; color: var(--t2); text-align: right; margin-top: 6px; }
+
+.startbtn { width: 100%; padding: 17px; background: linear-gradient(135deg, #22c55e, #06b6d4); color: #fff; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 900; cursor: pointer; margin-top: 10px; font-family: inherit; letter-spacing: .03em; transition: opacity .2s, transform .15s; box-shadow: 0 8px 30px rgba(34,197,94,.28); }
+.startbtn:hover { opacity: .88; transform: translateY(-1px); }
+
+/* ═══════════ GAME ═══════════ */
+.game { display: flex; height: 100vh; overflow: hidden; }
+.board-area { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 10px; background: radial-gradient(ellipse at 40% 50%, #0a1420 0%, var(--bg) 70%); }
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  gap: 3px;
+  background: #142a1a;
+  padding: 4px;
+  border-radius: 15px;
+  border: 3px solid #1c3f22;
+  box-shadow: 0 0 0 1px #264a2c, 0 16px 70px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.04);
+  width:  min(calc(100vh - 22px), calc(100vw - 302px));
+  height: min(calc(100vh - 22px), calc(100vw - 302px));
+}
+
+/* board squares */
+.sq { border-radius: 6px; padding: 4px 5px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.sq.norm { background: #fefdf0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
+.sq.start-sq { background: linear-gradient(148deg, #fff9d0, #ffe040); border: 2.5px solid #e0a000; box-shadow: inset 0 0 14px rgba(240,168,0,.2); }
+
+.sq-label { font-size: clamp(0.42rem, 0.85vmin, 0.62rem); color: rgba(0,0,0,.25); font-weight: 800; line-height: 1; margin-bottom: 2px; flex-shrink: 0; }
+.sq.start-sq .sq-label { color: #c08000; }
+
+/* KEY: readable font size — text truncated in JS, full text in center/popup/tooltip */
+.sq-text {
+  font-size: clamp(0.6rem, 1.35vmin, 0.95rem);
+  color: #2c2c2c; font-weight: 700; line-height: 1.35;
+  flex: 1; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  word-break: keep-all;
+}
+.sq.start-sq .sq-text { font-weight: 900; color: #704000; font-size: clamp(0.62rem, 1.4vmin, 1rem); }
+
+.sq-tokens { display: flex; flex-wrap: nowrap; margin-top: 3px; flex-shrink: 0; }
+.tok {
+  width: clamp(17px, 3vmin, 30px); height: clamp(17px, 3vmin, 30px);
+  border-radius: 50%; border: 2.5px solid rgba(255,255,255,.55);
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(9px, 1.5vmin, 14px); font-weight: 900; color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,.7); flex-shrink: 0;
+  margin-left: -6px; position: relative; transition: transform .2s; cursor: default;
+}
+.tok:first-child { margin-left: 0; }
+.tok:hover { transform: translateY(-3px) scale(1.18); z-index: 5; }
+
+/* ── CENTER: mission display ── */
+.center-sq {
+  grid-row: 2/8; grid-column: 2/8;
+  background: linear-gradient(155deg, #0c2618 0%, #0e2a1c 100%);
+  border-radius: 6px; border: 1px solid rgba(40,100,50,.4);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: space-between;
+  padding: 14px 20px 12px; overflow: hidden;
+}
+.c-welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; }
+.c-emoji { font-size: clamp(1.6rem, 3.4vmin, 3.2rem); }
+.c-title { font-family: 'Jua', 'Noto Sans KR', sans-serif; font-size: clamp(0.95rem, 2vmin, 1.5rem); color: #5ee898; text-align: center; letter-spacing: .01em; line-height: 1.4; }
+.c-hint { font-size: clamp(0.62rem, 1.15vmin, 0.85rem); color: #2a6038; }
+
+.c-mission-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; gap: 8px; min-height: 0; }
+.c-mission-who { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.c-m-badge { font-size: clamp(0.66rem, 1.3vmin, 0.95rem); font-weight: 900; padding: 4px 14px; border-radius: 20px; letter-spacing: .02em; }
+.c-m-sq { font-size: clamp(0.6rem, 1.1vmin, 0.82rem); color: #3a6644; font-weight: 700; }
+.c-divider { width: 55%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent); flex-shrink: 0; }
+.c-mission-body { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; width: 100%; }
+.c-mission-txt {
+  font-family: 'Jua', 'Noto Sans KR', sans-serif;
+  font-size: clamp(1.15rem, 3vmin, 2.4rem);
+  color: #eefef2; text-align: center; line-height: 1.55;
+  word-break: keep-all; text-shadow: 0 2px 16px rgba(0,0,0,.55);
+  padding: 0 10px;
+}
+.c-mission-txt.no-content { color: #1e4a2a; font-size: clamp(0.85rem, 1.7vmin, 1.35rem); font-style: italic; }
+
+.c-teams { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; flex-shrink: 0; }
+.cteam { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,.4); padding: 4px 11px; border-radius: 20px; border: 1px solid rgba(255,255,255,.05); }
+.cteam-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.cteam-name { font-size: clamp(0.56rem, 1vmin, 0.76rem); color: #90a896; }
+.cteam-pos { font-size: clamp(0.5rem, 0.88vmin, 0.66rem); color: #3a5542; margin-left: 2px; }
+
+/* ═══════════ PANEL ═══════════ */
+.panel { width: 288px; flex-shrink: 0; background: var(--s1); border-left: 1px solid var(--bd); padding: 16px 14px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+.panel::-webkit-scrollbar { width: 3px; }
+.panel::-webkit-scrollbar-thumb { background: var(--bd); }
+.panel-head { text-align: center; padding-bottom: 12px; border-bottom: 1px solid var(--bd); }
+.panel-head-emoji { font-size: 1.5rem; }
+.panel-head-title { font-size: 0.88rem; font-weight: 900; background: linear-gradient(125deg, #b4d0ff, #6b9eff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-top: 2px; }
+
+.psec { background: var(--bg); border: 1px solid var(--bd); border-radius: 12px; padding: 13px; }
+.psec-label { font-size: 0.68rem; font-weight: 900; color: var(--t3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+
+.tbtn { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 10px; border: 1.5px solid transparent; background: var(--s1); cursor: pointer; width: 100%; margin-bottom: 6px; transition: all .14s; color: var(--t1); font-size: 0.84rem; font-family: inherit; text-align: left; }
+.tbtn:last-child { margin-bottom: 0; }
+.tbtn.sel, .tbtn:hover { background: var(--s2); }
+.tbtn-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.tbtn-pos { margin-left: auto; font-size: 0.7rem; color: var(--t2); }
+.turn-badge { margin-left: auto; font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: 900; }
+
+.rollbtn { width: 100%; padding: 14px; background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff; border: none; border-radius: 12px; font-size: 0.97rem; font-weight: 900; cursor: pointer; font-family: inherit; letter-spacing: .02em; transition: opacity .2s, transform .12s; box-shadow: 0 6px 22px rgba(239,68,68,.28); }
+.rollbtn:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
+.rollbtn:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.dice-wrap { display: flex; gap: 10px; justify-content: center; margin-top: 12px; }
+.die { flex: 1; aspect-ratio: 1; max-width: 62px; background: linear-gradient(145deg, #fff, #eee); border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; color: #111; box-shadow: 0 5px 20px rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.9), inset 0 -2px 0 rgba(0,0,0,.12); }
+.die.rolling { animation: shk .07s linear infinite; }
+@keyframes shk { 0%,100%{transform:rotate(-10deg)} 50%{transform:rotate(10deg)} }
+.dice-sum { text-align: center; font-size: 0.78rem; color: var(--t2); margin-top: 6px; }
+.dice-sum b { color: var(--acc); font-size: 0.92rem; }
+
+.action-log { font-size: 0.79rem; color: var(--t2); line-height: 1.65; text-align: center; }
+.sync-row { display: flex; align-items: center; gap: 6px; justify-content: center; font-size: 0.68rem; color: var(--t3); }
+.sdot { width: 5px; height: 5px; border-radius: 50%; background: #22c55e; animation: blink 2s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+.pbtn { width: 100%; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 0.81rem; font-weight: 700; font-family: inherit; transition: background .14s; }
+.pbtn.undo { background: #110d24; color: #a78bfa; border: 1.5px solid #3a2870; }
+.pbtn.undo:hover { background: #180e30; }
+.pbtn.blue { background: var(--s2); color: var(--acc); border: 1.5px solid #1e3560; }
+.pbtn.blue:hover { background: var(--s3); }
+.pbtn.red { background: #180a0a; color: #f87171; border: 1.5px solid #3a1212; }
+.pbtn.red:hover { background: #200d0d; }
+
+/* ═══════════ MODALS ═══════════ */
+.modal-ov { position: fixed; inset: 0; background: rgba(2,6,16,.85); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(8px); animation: fi .2s ease; }
+@keyframes fi { from{opacity:0} to{opacity:1} }
+.modal { background: var(--s2); border: 1px solid var(--bd); border-radius: 22px; padding: 34px 28px; max-width: 420px; width: 92%; text-align: center; box-shadow: 0 28px 80px rgba(0,0,0,.85); animation: su .25s cubic-bezier(.22,1,.36,1); }
+@keyframes su { from{transform:translateY(18px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+.m-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 900; margin-bottom: 14px; letter-spacing: .05em; }
+.m-badge.sq { background: rgba(107,158,255,.15); color: var(--acc); }
+.m-badge.st { background: rgba(251,191,36,.15); color: var(--gold); }
+.m-who { font-size: 0.82rem; color: var(--t2); margin-bottom: 14px; }
+.m-text { font-family: 'Jua', 'Noto Sans KR', sans-serif; font-size: 1.3rem; line-height: 1.65; color: var(--t1); margin-bottom: 22px; word-break: keep-all; }
+.m-hint { font-size: 0.82rem; color: var(--t2); margin-bottom: 16px; }
+.m-close { padding: 12px 32px; background: linear-gradient(135deg, #22c55e, #06b6d4); color: #fff; border: none; border-radius: 11px; font-size: 0.92rem; font-weight: 900; cursor: pointer; font-family: inherit; box-shadow: 0 4px 16px rgba(34,197,94,.28); }
+.m-close:hover { opacity: .88; }
+
+.conf-icon { font-size: 2.8rem; margin-bottom: 14px; }
+.conf-msg { font-size: 0.98rem; color: var(--t1); line-height: 1.6; margin-bottom: 26px; font-weight: 600; }
+.conf-btns { display: flex; gap: 10px; justify-content: center; }
+.conf-no { padding: 11px 26px; background: var(--s1); color: var(--t2); border: 1.5px solid var(--bd); border-radius: 11px; cursor: pointer; font-size: 0.9rem; font-weight: 700; font-family: inherit; transition: all .14s; }
+.conf-no:hover { color: var(--t1); border-color: #2e4a68; }
+.conf-yes { padding: 11px 26px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; border: none; border-radius: 11px; cursor: pointer; font-size: 0.9rem; font-weight: 900; font-family: inherit; box-shadow: 0 4px 14px rgba(239,68,68,.3); }
+.conf-yes:hover { opacity: .88; }
+
+.ov { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: flex; align-items: center; justify-content: center; z-index: 150; }
+.ov-card { background: var(--s2); border: 1px solid var(--bd); border-radius: 18px; padding: 38px; text-align: center; }
+.spin { width: 38px; height: 38px; border: 3px solid var(--bd); border-top-color: var(--acc); border-radius: 50%; animation: sp .7s linear infinite; margin: 0 auto 14px; }
+@keyframes sp { to{transform:rotate(360deg)} }
+.ov-title { color: var(--acc); font-weight: 900; font-size: 1rem; }
+.ov-sub { color: var(--t2); font-size: 0.82rem; margin-top: 7px; }
+
+.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--s2); border: 1px solid var(--bd); color: var(--t1); padding: 10px 22px; border-radius: 10px; font-size: 0.86rem; z-index: 200; white-space: nowrap; box-shadow: 0 6px 24px rgba(0,0,0,.65); pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+
+/* ═══════════ CONSTANTS ═══════════ */
+const TC   = ['#f87171','#60a5fa','#4ade80','#fbbf24','#c084fc'];
+const TGL  = ['rgba(248,113,113,.5)','rgba(96,165,250,.5)','rgba(74,222,128,.5)','rgba(251,191,36,.5)','rgba(192,132,252,.5)'];
+const TINT = ['rgba(248,113,113,.20)','rgba(96,165,250,.20)','rgba(74,222,128,.22)','rgba(251,191,36,.22)','rgba(192,132,252,.20)'];
+const TL   = ['R','B','G','Y','P'];
+const START_TEXT = '지목한 팀에게 궁금한 것을 질문하세요!';
+
+/* 8×8 grid positions [row,col], counterclockwise loop, 28 squares */
+const SQ_POS = [
+  [8,1],[8,2],[8,3],[8,4],[8,5],[8,6],[8,7],[8,8],
+  [7,8],[6,8],[5,8],[4,8],[3,8],[2,8],
+  [1,8],[1,7],[1,6],[1,5],[1,4],[1,3],[1,2],[1,1],
+  [2,1],[3,1],[4,1],[5,1],[6,1],[7,1]
+];
+
+const SK = 'ibg6-cfg';
+const GK = 'ibg6-gst';
+
+/* ═══════════ STATE ═══════════ */
+let S = mkFresh();
+function mkFresh() {
+  return {
+    scr: 'loading',
+    n: 2,
+    names: ['🔴 빨강팀','🔵 파랑팀','🟢 초록팀','🟡 노랑팀','🟣 보라팀'],
+    btype: 'auto',
+    topic: '',
+    sqs: Array(28).fill(''),
+    ready: false,
+    pos: [0,0,0,0,0],
+    roll: null,               // {ti,d1,d2,tot,npos}
+    rt: 0,                    // current turn team
+    anim: false,
+    mission: null,
+    confModal: null,
+    genning: false,
+    prev: null,               // undo snapshot
+    sqOwner: Array(28).fill(-1),
+  };
+}
+
+/* Normalize arrays loaded from storage (guards against stale/mismatched saves) */
+const DEF_NAMES = ['🔴 빨강팀','🔵 파랑팀','🟢 초록팀','🟡 노랑팀','🟣 보라팀'];
+function normalize() {
+  if (!Number.isInteger(S.n) || S.n < 1 || S.n > 5) S.n = 2;
+  if (!Array.isArray(S.names)) S.names = [...DEF_NAMES];
+  for (let i = 0; i < 5; i++) if (!S.names[i]) S.names[i] = DEF_NAMES[i];
+  if (!Array.isArray(S.pos)) S.pos = [0,0,0,0,0];
+  for (let i = 0; i < 5; i++) if (typeof S.pos[i] !== 'number') S.pos[i] = 0;
+  if (!Array.isArray(S.sqs) || S.sqs.length !== 28) {
+    const old = Array.isArray(S.sqs) ? S.sqs : [];
+    S.sqs = Array.from({length:28}, (_,i) => old[i] || '');
+  }
+  if (!Array.isArray(S.sqOwner) || S.sqOwner.length !== 28) S.sqOwner = Array(28).fill(-1);
+  if (!Number.isInteger(S.rt) || S.rt >= S.n || S.rt < 0) S.rt = 0;
+  if (S.roll && (S.roll.ti === undefined || S.roll.ti >= S.n)) S.roll = null;
+}
+
+/* ═══════════ STORAGE ═══════════ */
+async function sget(k) { try { const r = await window.storage.get(k,true); return r ? JSON.parse(r.value) : null; } catch(e) { return null; } }
+async function sset(k,v) { try { await window.storage.set(k,JSON.stringify(v),true); } catch(e) {} }
+async function sdel(k)   { try { await window.storage.delete(k,true); } catch(e) {} }
+
+async function saveCfg() { await sset(SK,{n:S.n,names:S.names,sqs:S.sqs,ready:S.ready}); }
+async function saveGst() { await sset(GK,{pos:S.pos,roll:S.roll,rt:S.rt,prev:S.prev,sqOwner:S.sqOwner,ts:Date.now()}); }
+
+/* ═══════════ POLLING (2s multiplayer sync) ═══════════ */
+let lastTs = 0;
+function applyGst(g) {
+  S.pos = g.pos || [0,0,0,0,0];
+  S.roll = g.roll || null;
+  if (g.rt !== undefined) S.rt = g.rt;
+  S.prev = g.prev || null;
+  if (g.sqOwner) S.sqOwner = g.sqOwner;
+  if (g.ts) lastTs = g.ts;
+  normalize();
+}
+async function poll() {
+  if (S.anim || S.genning) return;
+  try {
+    const cfg = await sget(SK);
+    const gst = await sget(GK);
+    if (cfg && !S.ready && cfg.ready) {
+      // Game started remotely — everyone joins
+      S.n=cfg.n; S.names=cfg.names; S.sqs=cfg.sqs; S.ready=true; S.scr='game';
+      normalize();
+      if (gst) applyGst(gst);
+      render(); return;
+    }
+    if (S.scr === 'game') {
+      if (cfg) { S.n=cfg.n; S.names=cfg.names; S.sqs=cfg.sqs; normalize(); }
+      if (gst && gst.ts && gst.ts > lastTs + 100) { applyGst(gst); render(); }
+    }
+  } catch(e) {}
+}
+
+/* ═══════════ ACTIONS ═══════════ */
+
+/* AI mission generation */
+async function doGenerate() {
+  const topic = S.topic.trim();
+  if (!topic) { showToast('주제를 입력해주세요!'); return; }
+  S.genning = true; render();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        system: `아이스브레이킹 보드게임 미션 작성 전문가.
+반드시 JSON 배열만 반환 (설명·마크다운·백틱 금지).
+형식: ["미션1","미션2",...,"미션27"]
+조건: 각 미션은 12~22자로 짧고 간결하게. 친근하고 재밌게. 직장/교육 환경 적합. 정확히 27개.`,
+        messages: [{ role:'user', content:`주제: "${topic}"\n짧은 아이스브레이킹 미션 27개를 JSON 배열로.` }]
+      })
+    });
+    const d = await res.json();
+    const txt = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const arr = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    if (Array.isArray(arr) && arr.length >= 27) {
+      for (let i=0; i<27; i++) S.sqs[i+1] = String(arr[i]);
+      showToast('✅ 미션 27개 생성 완료!');
+    } else throw new Error();
+  } catch(e) { showToast('❌ 생성 실패. 다시 시도해주세요.'); }
+  S.genning = false; render();
+}
+
+/* Start game */
+async function doStart() {
+  if (!S.sqs.slice(1).some(s=>s&&s.trim())) { showToast('보드 칸 내용을 먼저 입력하거나 생성해주세요!'); return; }
+  S.ready = true; S.pos = [0,0,0,0,0]; S.roll = null; S.rt = 0;
+  S.prev = null; S.sqOwner = Array(28).fill(-1); S.scr = 'game';
+  await saveCfg(); await saveGst(); render();
+}
+
+/* Roll dice: 2 dice × 0-5, auto-advance to next team, tint squares */
+async function doRoll() {
+  if (S.anim) return;
+  S.anim = true;
+  const ti = S.rt;
+  S.prev = { pos:[...S.pos], roll:S.roll, rt:S.rt, sqOwner:[...S.sqOwner] };  // undo snapshot
+  const d1 = Math.floor(Math.random()*6);
+  const d2 = Math.floor(Math.random()*6);
+  const tot = d1 + d2;
+  let f = 0;
+  const iv = setInterval(() => {
+    const e1=document.getElementById('d1'), e2=document.getElementById('d2');
+    if(e1) e1.textContent = Math.floor(Math.random()*6);
+    if(e2) e2.textContent = Math.floor(Math.random()*6);
+    if (++f >= 12) {
+      clearInterval(iv);
+      if(e1){e1.textContent=d1;e1.classList.remove('rolling');}
+      if(e2){e2.textContent=d2;e2.classList.remove('rolling');}
+
+      const old = S.pos[ti];
+      const npos = (old + tot) % 28;
+      const crossed = tot > 0 && (old + tot) >= 28;   // START passed/landed
+
+      S.pos = [...S.pos]; S.pos[ti] = npos;
+      S.roll = { ti, d1, d2, tot, npos };
+      S.rt = (S.rt + 1) % S.n;                        // auto next team
+
+      /* square tint ownership: last-arrived team colors the square */
+      S.sqOwner = [...S.sqOwner];
+      if (S.sqOwner[old] === ti) {
+        const remain = Array.from({length:S.n},(_,i)=>i).filter(i => i!==ti && S.pos[i]===old);
+        S.sqOwner[old] = remain.length ? remain[remain.length-1] : -1;
+      }
+      if (tot > 0) S.sqOwner[npos] = ti;
+
+      S.anim = false;
+      lastTs = Date.now(); saveGst(); render();
+
+      setTimeout(() => {
+        if (tot === 0) { showToast('0+0! 이번 턴은 이동하지 않아요.'); return; }
+        if (crossed)      S.mission = { idx:0, text:START_TEXT, start:true, landed:npos===0, ti };
+        else if (S.sqs[npos] && S.sqs[npos].trim())
+                          S.mission = { idx:npos, text:S.sqs[npos], start:false, ti };
+        if (S.mission) render();
+      }, 250);
+    }
+  }, 55);
+  render();
+}
+
+/* Undo last roll (1 step) */
+async function doUndo() {
+  if (!S.prev) return;
+  S.pos = S.prev.pos; S.roll = S.prev.roll; S.rt = S.prev.rt;
+  S.sqOwner = S.prev.sqOwner || Array(28).fill(-1);
+  S.prev = null; S.mission = null;
+  lastTs = Date.now(); await saveGst(); render();
+  showToast('↩️ 마지막 굴리기를 되돌렸어요!');
+}
+
+/* Custom confirm (browser confirm() is blocked in artifact iframe) */
+function doConfirm(msg, cb) { S.confModal = {msg, cb}; render(); }
+function cfYes() { if (!S.confModal) return; const cb = S.confModal.cb; S.confModal = null; render(); if (cb) cb(); }
+function cfNo()  { S.confModal = null; render(); }
+
+/* Restart: reset positions only, keep settings */
+async function doRestart() {
+  S.pos=[0,0,0,0,0]; S.roll=null; S.mission=null; S.rt=0; S.prev=null;
+  S.sqOwner = Array(28).fill(-1);
+  lastTs = Date.now(); await saveGst(); render();
+  showToast('🔄 위치를 초기화했어요!');
+}
+
+/* Full reset: settings + game */
+function doReset() {
+  doConfirm('모든 설정과 게임 진행을 초기화할까요?', async () => {
+    S = mkFresh(); S.scr = 'setup';
+    await sdel(SK); await sdel(GK);
+    render();
+  });
+}
+
+/* ═══════════ RENDER ═══════════ */
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function render() {
+  const app = document.getElementById('app');
+  if (!app) return;
+  let h = '';
+  if (S.scr === 'loading') h = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#283a52">불러오는 중...</div>';
+  else if (S.scr === 'setup' || !S.ready) h = rSetup();
+  else h = rGame();
+  if (S.genning)   h += rGenOverlay();
+  if (S.confModal) h += rConfModal();
+  if (S.mission)   h += rMissionModal();
+  app.innerHTML = h;
+}
+
+/* ── Setup screen ── */
+function rSetup() {
+  const filled = S.sqs.slice(1).filter(s=>s&&s.trim()).length;
+  return `<div class="setup-page"><div class="setup-inner">
+<div class="logo">
+  <div class="logo-dice">🎲</div>
+  <div class="logo-title">아이스브레이킹 보드게임</div>
+  <div class="logo-sub">팀원들과 함께 즐기며 서로를 알아가요!</div>
+</div>
+
+<div class="scard">
+  <div class="scard-title">👥 팀 설정</div>
+  <div class="num-row">${[1,2,3,4,5].map(i=>`<button class="nb ${S.n===i?'on':''}" onclick="S.n=${i};render()">${i}팀</button>`).join('')}</div>
+  <div class="names-grid">${Array.from({length:S.n},(_,i)=>`
+    <div class="name-row">
+      <div class="cdot" style="background:${TC[i]}"></div>
+      <input type="text" value="${esc(S.names[i])}" oninput="S.names[${i}]=this.value" placeholder="팀 이름" maxlength="12">
+    </div>`).join('')}
+  </div>
+</div>
+
+<div class="scard">
+  <div class="scard-title">📋 보드 칸 설정 (27칸)</div>
+  <div class="btabs">
+    <button class="btab ${S.btype==='auto'?'on':''}" onclick="S.btype='auto';render()">🤖 자동 생성 (AI)</button>
+    <button class="btab ${S.btype==='manual'?'on':''}" onclick="S.btype='manual';render()">✏️ 직접 입력</button>
+  </div>
+  ${S.btype==='auto' ? `
+  <div class="flex-row">
+    <input class="topic-in" type="text" placeholder="주제 예: 1정연수 친목, 직장 생활, 취미, 여행"
+      value="${esc(S.topic)}" oninput="S.topic=this.value" onkeydown="if(event.key==='Enter')doGenerate()">
+    <button class="genbtn" onclick="doGenerate()">✨ 생성</button>
+  </div>
+  ${filled ? `<p class="gennote">✅ ${filled}개 미션 준비됨</p>` : ''}
+  ` : `
+  <div class="mangrid">${Array.from({length:27},(_,i)=>`
+    <div class="man-item">
+      <label>${i+1}번 칸</label>
+      <textarea oninput="S.sqs[${i+1}]=this.value" placeholder="미션...">${esc(S.sqs[i+1]||'')}</textarea>
+    </div>`).join('')}
+  </div>
+  <p class="man-count">${filled}/27 입력됨</p>`}
+</div>
+
+<button class="startbtn" onclick="doStart()">🎮 게임 시작!</button>
+</div></div>`;
+}
+
+/* ── Game screen ── */
+function rGame() {
+  const { n, names, pos, roll, rt, anim } = S;
+  let bh = '';
+
+  /* board squares */
+  SQ_POS.forEach(([r,c], idx) => {
+    const isS = idx === 0;
+    const here = Array.from({length:n},(_,i)=>i).filter(i => pos[i]===idx);
+    const raw  = isS ? 'START 🚀' : (S.sqs[idx]||'');
+    const short = raw.length > 30 ? raw.slice(0,30)+'…' : raw;
+    const tip = isS ? START_TEXT : (S.sqs[idx]||'');
+
+    /* tint: last-arrived team's light color */
+    let bgStyle = '';
+    if (!isS && here.length > 0) {
+      let owner = S.sqOwner[idx];
+      if (owner === -1 || !here.includes(owner)) owner = here[here.length-1];
+      bgStyle = `background:${TINT[owner]};`;
+    }
+
+    bh += `<div class="sq ${isS?'start-sq':'norm'}" style="grid-row:${r};grid-column:${c};${bgStyle}" title="${esc(tip)}">
+  <div class="sq-label">${isS?'★ START':idx}</div>
+  <div class="sq-text">${esc(short)||'<span style="color:#bbb;font-style:italic;font-size:.85em">비어있음</span>'}</div>
+  ${here.length ? `<div class="sq-tokens">${here.map(i=>`
+    <div class="tok" style="background:${TC[i]};box-shadow:0 0 0 2.5px rgba(255,255,255,.5),0 0 12px ${TGL[i]},0 3px 9px rgba(0,0,0,.55)">${TL[i]}</div>`).join('')}</div>` : ''}
+</div>`;
+  });
+
+  /* center: current mission display (updates every roll) */
+  const teamPosList = Array.from({length:n},(_,i)=>`
+    <div class="cteam">
+      <div class="cteam-dot" style="background:${TC[i]}"></div>
+      <span class="cteam-name">${esc(names[i])}</span>
+      <span class="cteam-pos">${pos[i]===0?'🚀':pos[i]+'칸'}</span>
+    </div>`).join('');
+
+  let centerInner;
+  if (!roll) {
+    centerInner = `<div class="c-welcome">
+      <div class="c-emoji">🎯</div>
+      <div class="c-title">아이스브레이킹<br>보드게임</div>
+      <div class="c-hint">🎲 주사위를 굴려서 시작하세요!</div>
+    </div>`;
+  } else {
+    const sqIdx = roll.npos;
+    const isStart = sqIdx === 0;
+    const mText = isStart ? START_TEXT : (S.sqs[sqIdx]||'');
+    const hasText = mText.trim().length > 0;
+    const tColor = TC[roll.ti];
+    centerInner = `<div class="c-mission-area">
+      <div class="c-mission-who">
+        <span class="c-m-badge" style="background:${tColor}22;color:${tColor};border:1px solid ${tColor}55">${esc(names[roll.ti])}</span>
+        <span class="c-m-sq">${isStart ? '🚀 START' : sqIdx+'번 칸'}</span>
+      </div>
+      <div class="c-divider"></div>
+      <div class="c-mission-body">
+        <div class="c-mission-txt${hasText?'':' no-content'}">${hasText ? esc(mText).replace(/\n/g,'<br>') : '미션이 없는 칸이에요'}</div>
+      </div>
+      <div class="c-divider"></div>
+    </div>`;
+  }
+  bh += `<div class="center-sq">${centerInner}<div class="c-teams">${teamPosList}</div></div>`;
+
+  const logHtml = roll
+    ? `<strong style="color:${TC[roll.ti]}">${esc(names[roll.ti])}</strong>이(가)<br>🎲 ${roll.d1} + ${roll.d2} = <strong style="color:${TC[roll.ti]}">${roll.tot}</strong>칸<br>→ ${roll.tot===0?'그대로':roll.npos===0?'🚀 START':roll.npos+'번 칸'}`
+    : '주사위를 굴려보세요!';
+
+  return `<div class="game">
+<div class="board-area"><div class="board">${bh}</div></div>
+<div class="panel">
+  <div class="panel-head">
+    <div class="panel-head-emoji">🎲</div>
+    <div class="panel-head-title">아이스브레이킹 보드게임</div>
+  </div>
+
+  <div class="psec">
+    <div class="psec-label">🎯 현재 차례 — ${esc(names[rt])}</div>
+    ${Array.from({length:n},(_,i)=>`
+    <button class="tbtn ${rt===i?'sel':''}" style="${rt===i?`border-color:${TC[i]};color:${TC[i]}`:''}" onclick="S.rt=${i};render()">
+      <span class="tbtn-dot" style="background:${TC[i]};box-shadow:0 0 7px ${TGL[i]}"></span>
+      ${esc(names[i])}
+      ${rt===i
+        ? `<span class="turn-badge" style="background:${TC[i]}22;color:${TC[i]}">차례</span>`
+        : `<span class="tbtn-pos">${pos[i]===0?'START':pos[i]+'번'}</span>`}
+    </button>`).join('')}
+  </div>
+
+  <div class="psec">
+    <button class="rollbtn" onclick="doRoll()" ${anim?'disabled':''}>${anim?'굴리는 중...':'🎲 주사위 굴리기!'}</button>
+    <div class="dice-wrap">
+      <div class="die ${anim?'rolling':''}" id="d1">${roll?roll.d1:'?'}</div>
+      <div class="die ${anim?'rolling':''}" id="d2">${roll?roll.d2:'?'}</div>
+    </div>
+    <div class="dice-sum">${roll?`${roll.d1} + ${roll.d2} = <b>${roll.tot}</b>칸`:'주사위를 굴리세요'}</div>
+  </div>
+
+  <div class="psec"><div class="action-log">${logHtml}</div></div>
+  <div class="psec"><div class="sync-row"><span class="sdot"></span>실시간 공유 중 (2초 간격 갱신)</div></div>
+
+  <div style="display:flex;flex-direction:column;gap:7px">
+    ${S.prev ? `<button class="pbtn undo" onclick="doUndo()">↩️ 마지막 굴리기 되돌리기</button>` : ''}
+    <button class="pbtn blue" onclick="doRestart()">🔄 이어서 다시 시작 (위치 초기화)</button>
+    <button class="pbtn red"  onclick="doReset()">🗑️ 전체 초기화 (설정 포함)</button>
+  </div>
+</div>
+</div>`;
+}
+
+/* ── Modals ── */
+function rMissionModal() {
+  const { idx, text, start, landed, ti } = S.mission;
+  const tColor = ti !== undefined ? TC[ti] : '#6b9eff';
+  const tName  = ti !== undefined ? esc(S.names[ti]) : '';
+  const badge = start ? (landed ? '🚀 START 도착!' : '🚀 START 통과!') : `📍 ${idx}번 칸 미션`;
+  const who = tName ? `<strong style="color:${tColor}">${tName}</strong>이(가) ${start?(landed?'START에 도착!':'START 통과!'):'도착했어요!'}` : '';
+  return `<div class="modal-ov" onclick="if(event.target.classList.contains('modal-ov')){S.mission=null;render();}">
+<div class="modal">
+  <div class="m-badge ${start?'st':'sq'}">${badge}</div>
+  ${who?`<div class="m-who">${who}</div>`:''}
+  <div class="m-text">${esc(text).replace(/\n/g,'<br>')}</div>
+  ${start?`<div class="m-hint">💬 지목할 팀을 골라서 질문하세요!</div>`:''}
+  <button class="m-close" onclick="S.mission=null;render()">확인! ✓</button>
+</div></div>`;
+}
+
+function rConfModal() {
+  return `<div class="modal-ov"><div class="modal">
+  <div class="conf-icon">⚠️</div>
+  <div class="conf-msg">${esc(S.confModal.msg)}</div>
+  <div class="conf-btns">
+    <button class="conf-no" onclick="cfNo()">취소</button>
+    <button class="conf-yes" onclick="cfYes()">초기화</button>
+  </div>
+</div></div>`;
+}
+
+function rGenOverlay() {
+  return `<div class="ov"><div class="ov-card">
+  <div class="spin"></div>
+  <div class="ov-title">"${esc(S.topic)}" 미션 생성 중...</div>
+  <div class="ov-sub">Claude가 27개 아이스브레이킹 미션을 작성하고 있어요</div>
+</div></div>`;
+}
+
+/* ═══════════ TOAST ═══════════ */
+let _tt;
+function showToast(msg) {
+  document.querySelectorAll('.toast').forEach(e=>e.remove());
+  clearTimeout(_tt);
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  document.getElementById('app').appendChild(el);
+  _tt = setTimeout(()=>el.remove(), 3000);
+}
+
+/* ═══════════ INIT ═══════════ */
+async function init() {
+  render();
+  const cfg = await sget(SK);
+  const gst = await sget(GK);
+  if (cfg) {
+    S.n=cfg.n; S.names=cfg.names; S.sqs=cfg.sqs; S.ready=cfg.ready;
+    normalize();
+    if (gst) applyGst(gst);
+    S.scr = S.ready ? 'game' : 'setup';
+  } else S.scr = 'setup';
+  render();
+  setInterval(poll, 2000);
+}
+init();
+
+</script>
+</body>
+</html>
